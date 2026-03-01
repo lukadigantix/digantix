@@ -46,15 +46,15 @@ const projects: Project[] = [
     category: "E-commerce Website",
     image: "/projects/alex/alex-logo.jpg",
     link: "/projects/alexzlatara",
-    tags: ["featured", "web"]
+    tags: ["featured", "web", "branding"]
   },
   {
     id: 5,
     title: "Grid",
-    category: "Social Network & Booking",
+    category: "Mobile App",
     image: "/projects/grid/grid.jpg",
     link: "/projects/grid",
-    tags: ["featured", "mobile", "web"]
+    tags: ["featured", "mobile"]
   },
   {
     id: 6,
@@ -196,7 +196,7 @@ export default function ProjectsPage() {
                   <a
                     key={project.id}
                     href={project.link}
-                    className={`cursor-pointer group ${isRightColumn ? 'md:mt-[150px]' : ''}`}
+                    className={`cursor-pointer group ${isRightColumn ? 'md:mt-37.5' : ''}`}
                   >
                     <div className="w-full">
                       {/* Project Image Container */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ChangeEvent, type FormEvent } from "react";
 import Header from "@/components/layout/Header";
 import { motion } from "motion/react";
 import { LetsWorkTogether } from "@/components/ui/lets-work-section";
@@ -10,6 +10,25 @@ export default function ServicesPage() {
   const [isDark, setIsDark] = useState(false);
   const [openServiceIndex, setOpenServiceIndex] = useState<number | null>(null);
   const [openProcessIndex, setOpenProcessIndex] = useState<number | null>(null);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [selectedBudget, setSelectedBudget] = useState("");
+  const [formValues, setFormValues] = useState({
+    name: "",
+    email: "",
+    projectDescription: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedDetails, setSubmittedDetails] = useState<{
+    name: string;
+    email: string;
+    interests: string[];
+    budget: string;
+  } | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: "idle" | "success" | "error";
+    message: string;
+  }>({ type: "idle", message: "" });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -89,6 +108,108 @@ export default function ServicesPage() {
       description: "Deploying the application to production, monitoring performance, and providing ongoing maintenance and updates."
     }
   ];
+
+  const interestOptions = [
+    "Site from scratch",
+    "UX/UI design",
+    "Product design",
+    "Webflow site",
+    "Motion design",
+    "Branding",
+    "Mobile development",
+  ];
+
+  const budgetOptions = ["1k-10k", "10-20k", "30-40k", "40-50k", "50-100k", ">100k"];
+
+  const toggleInterest = (interest: string) => {
+    setSelectedInterests((current) =>
+      current.includes(interest)
+        ? current.filter((item) => item !== interest)
+        : [...current, interest]
+    );
+  };
+
+  const handleInputChange = (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = event.target;
+    setFormValues((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const hasRequiredTextFields =
+      Boolean(formValues.name.trim()) &&
+      Boolean(formValues.email.trim()) &&
+      Boolean(formValues.projectDescription.trim());
+    const hasRequiredSelections = selectedInterests.length > 0 && Boolean(selectedBudget);
+    const isFormValid = hasRequiredTextFields && hasRequiredSelections;
+
+    if (!isFormValid) {
+      setSubmitStatus({
+        type: "error",
+        message: "Please complete all fields, interests, and budget before sending.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus({ type: "idle", message: "" });
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formValues.name,
+          email: formValues.email,
+          projectDescription: formValues.projectDescription,
+          interests: selectedInterests,
+          budget: selectedBudget,
+        }),
+      });
+
+      const data = (await response.json()) as { message?: string };
+
+      if (!response.ok) {
+        throw new Error(data.message ?? "Unable to send your message right now.");
+      }
+
+      setSubmitStatus({
+        type: "success",
+        message: "Thanks! Your message has been sent. We'll contact you soon.",
+      });
+      setSubmittedDetails({
+        name: formValues.name.trim(),
+        email: formValues.email.trim(),
+        interests: selectedInterests,
+        budget: selectedBudget,
+      });
+      setIsSubmitted(true);
+      setFormValues({ name: "", email: "", projectDescription: "" });
+      setSelectedInterests([]);
+      setSelectedBudget("");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred while sending your message.";
+
+      setSubmitStatus({ type: "error", message });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const isFormComplete =
+    Boolean(formValues.name.trim()) &&
+    Boolean(formValues.email.trim()) &&
+    Boolean(formValues.projectDescription.trim()) &&
+    selectedInterests.length > 0 &&
+    Boolean(selectedBudget);
 
   return (
     <>
@@ -342,55 +463,79 @@ export default function ServicesPage() {
 
             {/* Right Side - Contact Form */}
             <div className="relative">
-              <form className="space-y-12">
+              {isSubmitted ? (
+                <div className="rounded-3xl border border-gray-200 bg-white p-8 sm:p-10 shadow-[0_25px_80px_rgba(0,0,0,0.08)]">
+                  <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full bg-black">
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M20 6L9 17L4 12"
+                        stroke="white"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+
+                  <h3 className="text-3xl sm:text-4xl font-normal text-black mb-4" style={{ letterSpacing: "-0.03em" }}>
+                    Thank you.
+                  </h3>
+                  <p className="text-gray-600 font-light leading-relaxed text-sm sm:text-base mb-6">
+                    Your inquiry has been sent successfully. We&apos;ll review your request and get back to you within 24 hours.
+                  </p>
+
+                  {submittedDetails && (
+                    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 space-y-3">
+                      <p className="text-sm text-gray-600">
+                        <span className="text-black font-medium">Name:</span> {submittedDetails.name}
+                      </p>
+                      <p className="text-sm text-gray-600 wrap-break-word">
+                        <span className="text-black font-medium">Email:</span> {submittedDetails.email}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="text-black font-medium">Interests:</span>{" "}
+                        {submittedDetails.interests.length > 0
+                          ? submittedDetails.interests.join(", ")
+                          : "Not selected"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="text-black font-medium">Budget:</span>{" "}
+                        {submittedDetails.budget || "Not selected"}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+              <form className="space-y-12" onSubmit={handleSubmit}>
                 {/* Interests Section */}
                 <div>
                   <h3 className="text-2xl font-normal mb-6 text-black">
                     I&apos;m interested in...
                   </h3>
                   <div className="flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      className="px-6 py-3 rounded-full border border-gray-300 text-black hover:bg-black hover:text-white transition-all duration-300"
-                    >
-                      Site from scratch
-                    </button>
-                    <button
-                      type="button"
-                      className="px-6 py-3 rounded-full border border-gray-300 text-black hover:bg-black hover:text-white transition-all duration-300"
-                    >
-                      UX/UI design
-                    </button>
-                    <button
-                      type="button"
-                      className="px-6 py-3 rounded-full border border-gray-300 text-black hover:bg-black hover:text-white transition-all duration-300"
-                    >
-                      Product design
-                    </button>
-                    <button
-                      type="button"
-                      className="px-6 py-3 rounded-full border border-gray-300 text-black hover:bg-black hover:text-white transition-all duration-300"
-                    >
-                      Webflow site
-                    </button>
-                    <button
-                      type="button"
-                      className="px-6 py-3 rounded-full border border-gray-300 text-black hover:bg-black hover:text-white transition-all duration-300"
-                    >
-                      Motion design
-                    </button>
-                    <button
-                      type="button"
-                      className="px-6 py-3 rounded-full border border-gray-300 text-black hover:bg-black hover:text-white transition-all duration-300"
-                    >
-                      Branding
-                    </button>
-                    <button
-                      type="button"
-                      className="px-6 py-3 rounded-full border border-gray-300 text-black hover:bg-black hover:text-white transition-all duration-300"
-                    >
-                      Mobile development
-                    </button>
+                    {interestOptions.map((option) => {
+                      const isSelected = selectedInterests.includes(option);
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => toggleInterest(option)}
+                          className={`px-6 py-3 rounded-full border transition-all duration-300 ${
+                            isSelected
+                              ? "border-black bg-black text-white"
+                              : "border-gray-300 text-black hover:bg-black hover:text-white"
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -398,8 +543,12 @@ export default function ServicesPage() {
                 <div>
                   <input
                     type="text"
+                    name="name"
                     placeholder="Your name"
-                    className="w-full bg-transparent border-b border-gray-300 py-4 text-black placeholder-gray-400 focus:outline-none focus:border-black transition-colors duration-300"
+                    value={formValues.name}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-transparent border-b border-gray-300 py-4 text-black placeholder-gray-400 outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:border-black transition-colors duration-300"
                   />
                 </div>
 
@@ -407,69 +556,87 @@ export default function ServicesPage() {
                 <div>
                   <input
                     type="email"
+                    name="email"
                     placeholder="Email"
-                    className="w-full bg-transparent border-b border-gray-300 py-4 text-black placeholder-gray-400 focus:outline-none focus:border-black transition-colors duration-300"
+                    value={formValues.email}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-transparent border-b border-gray-300 py-4 text-black placeholder-gray-400 outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:border-black transition-colors duration-300"
                   />
                 </div>
 
                 {/* Project Description */}
                 <div>
                   <textarea
+                    name="projectDescription"
                     placeholder="Tell us about your project"
                     rows={4}
-                    className="w-full bg-transparent border-b border-gray-300 py-4 text-black placeholder-gray-400 focus:outline-none focus:border-black transition-colors duration-300 resize-none"
+                    value={formValues.projectDescription}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-transparent border-b border-gray-300 py-4 text-black placeholder-gray-400 outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:border-black transition-colors duration-300 resize-none"
                   />
                 </div>
 
                 {/* Budget Section */}
                 <div>
                   <h3 className="text-xl font-normal mb-6 text-black">
-                    Project budget (USD)
+                    Project budget (EUR)
                   </h3>
                   <div className="flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      className="px-6 py-3 rounded-full border border-gray-300 text-black hover:bg-black hover:text-white transition-all duration-300"
-                    >
-                      10-20k
-                    </button>
-                    <button
-                      type="button"
-                      className="px-6 py-3 rounded-full border border-gray-300 text-black hover:bg-black hover:text-white transition-all duration-300"
-                    >
-                      30-40k
-                    </button>
-                    <button
-                      type="button"
-                      className="px-6 py-3 rounded-full border border-gray-300 text-black hover:bg-black hover:text-white transition-all duration-300"
-                    >
-                      40-50k
-                    </button>
-                    <button
-                      type="button"
-                      className="px-6 py-3 rounded-full border border-gray-300 text-black hover:bg-black hover:text-white transition-all duration-300"
-                    >
-                      50-100k
-                    </button>
-                    <button
-                      type="button"
-                      className="px-6 py-3 rounded-full border border-gray-300 text-black hover:bg-black hover:text-white transition-all duration-300"
-                    >
-                      &gt;100k
-                    </button>
+                    {budgetOptions.map((option) => {
+                      const isSelected = selectedBudget === option;
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => setSelectedBudget(option)}
+                          className={`px-6 py-3 rounded-full border transition-all duration-300 ${
+                            isSelected
+                              ? "border-black bg-black text-white"
+                              : "border-gray-300 text-black hover:bg-black hover:text-white"
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
+
+                {submitStatus.type !== "idle" && (
+                  <p
+                    className={`text-sm ${
+                      submitStatus.type === "success" ? "text-green-700" : "text-red-600"
+                    }`}
+                  >
+                    {submitStatus.message}
+                  </p>
+                )}
+
+                {isSubmitting && (
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <span className="h-4 w-4 rounded-full border-2 border-gray-300 border-t-black animate-spin" />
+                    Sending your message...
+                  </div>
+                )}
 
                 {/* Submit Button */}
                 <div>
                   <button
                     type="submit"
-                    className="w-full py-5 bg-black text-white rounded-full hover:bg-gray-800 transition-colors duration-300 text-lg font-medium"
+                    disabled={isSubmitting || !isFormComplete}
+                    className={`w-full py-5 rounded-full transition-colors duration-300 text-lg font-medium ${
+                      isSubmitting || !isFormComplete
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-black text-white hover:bg-gray-800"
+                    }`}
                   >
-                    Send Message
+                    {isSubmitting ? "Sending..." : "Send Message"}
                   </button>
                 </div>
               </form>
+              )}
             </div>
           </div>
         </div>

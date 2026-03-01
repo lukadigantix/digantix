@@ -21,7 +21,7 @@ export function LetsWorkTogether() {
   }
 
   const handleBookCall = () => {
-    window.open("https://cal.com/jatin-yadav05/15min", "_blank")
+    window.open("https://cal.com/digantix/30min?overlayCalendar=true", "_blank")
   }
 
   return (
@@ -55,7 +55,7 @@ export function LetsWorkTogether() {
                 transitionDelay: "200ms",
               }}
             >
-              Let's talk
+              Let&apos;s talk
             </h3>
           </div>
 
@@ -137,7 +137,7 @@ export function LetsWorkTogether() {
               transitionDelay: "450ms",
             }}
           >
-            15 min intro call
+            30 min intro call
           </span>
         </div>
 
@@ -182,7 +182,7 @@ export function LetsWorkTogether() {
                     transform: isHovered && !isClicked ? "translateY(-8%)" : "translateY(0)",
                   }}
                 >
-                  Let's work
+                  Let&apos;s work
                 </span>
               </span>
               <span className="block overflow-hidden pb-4">
@@ -253,7 +253,7 @@ export function LetsWorkTogether() {
           }}
         >
           <p className="max-w-md text-sm leading-relaxed text-gray-400">
-            Have a project in mind? I'd love to hear about it. Let's create something exceptional together.
+            Have a project in mind? I&apos;d love to hear about it. Let&apos;s create something exceptional together.
           </p>
           <span className="text-xs tracking-widest uppercase text-gray-500">hello@example.com</span>
         </div>

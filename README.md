@@ -16,6 +16,33 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Contact Form Email Setup
+
+The Services page form sends submissions through `app/api/contact/route.ts` using SMTP.
+
+1. Copy `.env.example` to `.env.local`.
+2. Fill in your SMTP and recipient values:
+
+```bash
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+CONTACT_TO_EMAIL=
+CONTACT_FROM_EMAIL=
+SITE_URL=
+```
+
+If `CONTACT_FROM_EMAIL` is omitted, `SMTP_USER` is used as sender.
+
+Optional for branded email logo:
+
+```bash
+EMAIL_LOGO_URL=
+```
+
+If `EMAIL_LOGO_URL` is not set, the system uses `SITE_URL/logo/logo-light.png`.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

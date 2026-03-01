@@ -168,7 +168,7 @@ export default function ProjectsSection({
               >
                 <a
                   href={project.href}
-                  className="group relative overflow-hidden rounded-2xl bg-gray-100 aspect-[3/4] block transition-transform duration-300 hover:scale-[1.02]"
+                  className="group relative overflow-hidden rounded-2xl bg-gray-100 aspect-3/4 block transition-transform duration-300 hover:scale-[1.02]"
                 >
                   {/* Image */}
                   <div className="absolute inset-0">
@@ -180,7 +180,7 @@ export default function ProjectsSection({
                       sizes="(max-width: 768px) 85vw, (max-width: 1024px) 50vw, 33vw"
                     />
                     {/* Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent" />
                   </div>
 
                   {/* Content */}
